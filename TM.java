@@ -20,11 +20,11 @@ public class TM {
 
 	}
 
-	void appMain(String args[]) throws IOException {
+	void appMain(String [] args) throws IOException {
 
-	String cmd = "";
-	String data = "";
-	String desc = "";
+	String cmd = null;
+	String data = null;
+	String desc = null;
 
 	Log log = new Log();
 
@@ -32,7 +32,6 @@ public class TM {
 
 	try {
 		cmd = args[0];
-		data = args[1];
 
 		cmd = cmd.toUpperCase();
 
@@ -43,6 +42,17 @@ public class TM {
 		}
 		else {
 			desc = null;
+		}
+		
+		if(cmd.equals("SUMMARY") && args.length < 2){
+
+			data = null;
+
+		}
+		else {
+
+			data = args[1];
+
 		}
 	}
 	catch (ArrayIndexOutOfBoundsException err) {
@@ -57,7 +67,13 @@ public class TM {
 				break;
 			case "START": cmdStart(data, log, cmd, timeRN);
 				break;
-			case "SUMMARY": cmdSummary(data, log, timeRN);
+			case "SUMMARY": 
+				if(data == null) {
+					cmdSummary(log);
+				}
+				else {
+					cmdSummary(data, log);
+				}
 				break;
 			case "DESCRIBE": cmdDescribe(data, log, cmd, timeRN, desc);
 				break;
@@ -82,9 +98,62 @@ public class TM {
 	}
 
 
-	void cmdSummary(String data, Log log, LocalDateTime timeRN) throws IOException{
+	void cmdSummary(Log log) throws IOException{
+/**
+		long totTime = 0;
+		LinkedList<TaskLogEntry> lines = log.readFile();
+		
+		TreeSet<String> nameData = new TreeSet<String>();
 
-		String line = (timeRN + " " + data + " Completed Summary");
+		for(TaskLogEntry entry : lines) {
+
+			nameData.add(entry.data);
+
+		}
+		*/
+		
+		Scanner mine = null;
+		File myfile = new File("TM.log");
+		mine = new Scanner(myfile);
+		while(mine.hasNext()) {
+
+			String lineOfFile = mine.nextLine();
+			if(!(lineOfFile.contains("null"))) {
+
+				//I don't remember why i have this, but removing it works YEA!
+//				if(lineOfFile.contains(" DESCRIBE ")) {
+
+					System.out.println(lineOfFile);
+
+//				}
+
+			}
+
+		}
+		//log.writeLine(line);
+
+		
+		log.readFile();
+
+		
+	}
+		
+	long cmdSummary(String todo, Log log) throws IOException {
+
+		// Read log file, gather entries
+		LinkedList<TaskLogEntry> lines = log.readFile();
+		
+		// Create Task object based on task name, with entries from log
+		Task sumTask = new Task(todo, lines);
+		
+		// Display 
+		System.out.println(sumTask.toString());
+		return sumTask.totTime;
+		
+	}
+		
+/**
+testing other code, this is currently useless
 
 		Scanner mine = null;
 		File myfile = new File("TM.log");
@@ -107,8 +176,8 @@ public class TM {
 
 		
 		log.readLog();
-		
-	}
+*/
+	
 
 
 	void cmdDescribe(String data, Log log, String cmd, LocalDateTime timeRN, String desc) throws IOException {
@@ -131,99 +200,150 @@ public class TM {
 		*/
 	}
 
-	class Log {
+	public class Log{
 
-		public FileWriter fileWrite;
-		public PrintWriter outputFile;
-
-		void writeLine(String line) throws IOException{
-
-			outputFile.println(line);
-			outputFile.close();
-
-		}
-		
-		
-		
-		void readLog() throws IOException {
-			
-			//Credit goes to Luca Davanzo + Athif Shaffy on StackOverfow.com
-			FileInputStream fstream = new FileInputStream("TM.log");
-			BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
-			String strLine = "";
-			StringTokenizer st = new StringTokenizer(strLine);
-
-			int count = 0;
-			while((strLine = br.readLine()) != null) {
-				System.out.println(strLine);
-				while(st.hasMoreTokens()) {
-					
-					al.add(st.nextToken());
-					count++;
-					
-					System.out.println(al);
-					
-				}
-			}
-
-			fstream.close();
-			
-		}
+		public FileWriter fwriter;
+		public PrintWriter outFile; 
 
 		public Log() throws IOException {
 
-			fileWrite = new FileWriter("TM.log", true);
-			outputFile= new PrintWriter(fileWrite);
+			fwriter = new FileWriter("TM.log", true);
+			outFile = new PrintWriter(fwriter);
 
 		}
+
+
+		void writeLine(String line) throws IOException{
+
+			outFile.println(line);
+			outFile.close();
+
+		}
+
+		LinkedList<TaskLogEntry> readFile() throws IOException {
+
+			LinkedList<TaskLogEntry> LineL = new LinkedList<TaskLogEntry>();
+			
+			File logF = new File("TM.log");
+			Scanner file = new Scanner(logF);
+			
+			String thisLine;
+			while(file.hasNextLine()) {
+
+				TaskLogEntry entry = new TaskLogEntry();
+				thisLine = file.nextLine();
+				StringTokenizer stringTok = new StringTokenizer(thisLine, " ");
+				entry.timeRN = LocalDateTime.parse(stringTok.nextToken());
+				entry.data = stringTok.nextToken();
+				entry.cmd = stringTok.nextToken();
+
+				if(stringTok.hasMoreTokens()) {
+					entry.desc = stringTok.nextToken();
+				}
+				LineL.add(entry);
+
+			}
+			file.close();
+			return LineL;
+
+		}
+
 
 
 	}
 
 
 
-	class LogEntry{
+		class TaskLogEntry{
 
-		LocalDateTime timeRN;
-		String command;
-		String name;
-		String data;
-		
-		public LogEntry(String taskLine) {
-
-			StringTokenizer stok = new StringTokenizer(taskLine, " ");
-			int nTokens = stok.countTokens();
-			timeRN = LocalDateTime.parse(stok.nextToken());
+			LocalDateTime timeRN;
+			String cmd;
+			String data;
+			String desc;
 
 		}
+	
 
+
+
+
+
+
+
+	static class TimeUtil {
+
+		static String toElapsedTime(long totSecs) {
+
+			long hours = totSecs/3600;
+			long mins = (totSecs % 3600) / 60;
+			long secs = (totSecs % 60);
+
+			String timeNow = (String.format("%02d:%02d:%02d", hours, mins, secs));
+			return timeNow;
+
+		}
 	}
 
+	class Task {
 
-	//Probably missing some LONG vars
-	class TaskDuration {
+		private String name = " ";
+		private String desc = " ";
+		private String timeAhora = " ";
+		private long totTime = 0;
+		public Task(String name, LinkedList<TaskLogEntry> entries) {
+			this.name = name;
+			this.desc = null;
+			LocalDateTime lastStart = null;
+			long timeOverall = 0;
+			for(TaskLogEntry entry : entries) {
+				if(entry.data.equals(name)) {
+					switch(entry.cmd) {
+						case "START":
+							lastStart = entry.timeRN;
+							break;
+						case "STOP":
+							if(lastStart != null) {
+								timeOverall += taskDuration(lastStart, entry.timeRN);
+							}
+							lastStart = null;
+							break;
+						case "DESCRIBE":
+							desc = entry.desc;
+					}
+				}
+			}
+			this.timeAhora = TimeUtil.toElapsedTime(timeOverall);
+			this.totTime = timeOverall;
+		}
 
-		public LocalDateTime start, stop;
+
+		public String toString() {
+			String stringbean = ("\nSummary for Task: " + this.name + "\nDescription for Task: " + this.desc + "\nDuration for Task: " + this.timeAhora );
+			return stringbean;
+		}
+
+
+
+
 		long taskDuration(LocalDateTime start, LocalDateTime stop){
-			this.start = start;
-
-			return ChronoUnit.SECONDS.between(start,stop);
+				long dur = ChronoUnit.SECONDS.between(start, stop);
+				return dur;
 
 		}
-	}
-
-}
-
-
-class TimeUtil {
-
-	static String toElapsedTime(long totSecs) {
-
-		long hours = totSecs/3600;
-		long mins = (totSecs % 3600) / 60;
-		long secs = (totSecs % 60);
-
-		return (String.format("%02d:%02d:%02d", hours, mins, secs));
 
 	}
+
+/**
+
+This is crap code for the time being...
+
+			public LogEntry(String taskLine) {
+
+				StringTokenizer stok = new StringTokenizer(taskLine, " ");
+				int nTokens = stok.countTokens();
+				timeRN = LocalDateTime.parse(stok.nextToken());
+
+			}
+			
+*/
 }
