@@ -84,7 +84,7 @@ public class TM {
 
 	void cmdStart(String data, Log log, String cmd, LocalDateTime timeRN) throws IOException{
 
-		String line = (timeRN + " " + data + " " + cmd);
+		String line = (timeRN + "\t" + data + "\t" + cmd);
 		log.writeLine(line);
 
 
@@ -92,7 +92,7 @@ public class TM {
 
 	void cmdStop(String data, Log log, String cmd, LocalDateTime timeRN) throws IOException{
 
-		String line = (timeRN + " " + data + " " + cmd);
+		String line = (timeRN + "\t" + data + "\t" + cmd);
 		log.writeLine(line);
 
 	}
@@ -182,7 +182,7 @@ testing other code, this is currently useless
 
 	void cmdDescribe(String data, Log log, String cmd, LocalDateTime timeRN, String desc) throws IOException {
 
-		String line = (timeRN + " " + data + " " + cmd + " " + desc);
+		String line = (timeRN + "\t" + data + " \t" + cmd + "\t" + desc);
 		log.writeLine(line);
 
 	}
@@ -232,7 +232,7 @@ testing other code, this is currently useless
 
 				TaskLogEntry entry = new TaskLogEntry();
 				thisLine = file.nextLine();
-				StringTokenizer stringTok = new StringTokenizer(thisLine, " ");
+				StringTokenizer stringTok = new StringTokenizer(thisLine, "\t");
 				entry.timeRN = LocalDateTime.parse(stringTok.nextToken());
 				entry.data = stringTok.nextToken();
 				entry.cmd = stringTok.nextToken();
@@ -286,13 +286,14 @@ testing other code, this is currently useless
 
 	class Task {
 
-		private String name = " ";
-		private String desc = " ";
-		private String timeAhora = " ";
+		private String name = "";
+		private String desc = "";
+		private String timeAhora = "";
 		private long totTime = 0;
 		public Task(String name, LinkedList<TaskLogEntry> entries) {
 			this.name = name;
-			this.desc = null;
+			//WHY IS THIS BEING WRITTEN AS THE GODDAMN DESCRIPTION
+			this.desc = "WTF";
 			LocalDateTime lastStart = null;
 			long timeOverall = 0;
 			for(TaskLogEntry entry : entries) {
