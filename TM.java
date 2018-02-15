@@ -22,9 +22,9 @@ public class TM {
 
 	void appMain(String [] args) throws IOException {
 
-	String cmd = null;
-	String data = null;
-	String desc = null;
+	String cmd = "";
+	String data = "";
+	String desc = "";
 
 	Log log = new Log();
 
@@ -41,7 +41,7 @@ public class TM {
 
 		}
 		else {
-			desc = null;
+			desc = "";
 		}
 		
 		if(cmd.equals("SUMMARY") && args.length < 2){
@@ -84,7 +84,7 @@ public class TM {
 
 	void cmdStart(String data, Log log, String cmd, LocalDateTime timeRN) throws IOException{
 
-		String line = (timeRN + "\t" + data + "\t" + cmd);
+		String line = (timeRN + " " + data + " " + cmd);
 		log.writeLine(line);
 
 
@@ -92,7 +92,7 @@ public class TM {
 
 	void cmdStop(String data, Log log, String cmd, LocalDateTime timeRN) throws IOException{
 
-		String line = (timeRN + "\t" + data + "\t" + cmd);
+		String line = (timeRN + " " + data + " " + cmd);
 		log.writeLine(line);
 
 	}
@@ -111,7 +111,7 @@ public class TM {
 
 		}
 		*/
-		
+
 		Scanner mine = null;
 		File myfile = new File("TM.log");
 		mine = new Scanner(myfile);
@@ -182,7 +182,7 @@ testing other code, this is currently useless
 
 	void cmdDescribe(String data, Log log, String cmd, LocalDateTime timeRN, String desc) throws IOException {
 
-		String line = (timeRN + "\t" + data + " \t" + cmd + "\t" + desc);
+		String line = (timeRN + " " + data + " " + cmd + " " + desc);
 		log.writeLine(line);
 
 	}
@@ -232,13 +232,15 @@ testing other code, this is currently useless
 
 				TaskLogEntry entry = new TaskLogEntry();
 				thisLine = file.nextLine();
-				StringTokenizer stringTok = new StringTokenizer(thisLine, "\t");
+				StringTokenizer stringTok = new StringTokenizer(thisLine, " ");
 				entry.timeRN = LocalDateTime.parse(stringTok.nextToken());
 				entry.data = stringTok.nextToken();
 				entry.cmd = stringTok.nextToken();
 
-				if(stringTok.hasMoreTokens()) {
+				if(stringTok.hasMoreTokens())
 					entry.desc = stringTok.nextToken();
+				while(stringTok.hasMoreTokens()) {
+					entry.desc += (" " + stringTok.nextToken());
 				}
 				LineL.add(entry);
 
@@ -293,7 +295,7 @@ testing other code, this is currently useless
 		public Task(String name, LinkedList<TaskLogEntry> entries) {
 			this.name = name;
 			//WHY IS THIS BEING WRITTEN AS THE GODDAMN DESCRIPTION
-			this.desc = "WTF";
+			this.desc = "";
 			LocalDateTime lastStart = null;
 			long timeOverall = 0;
 			for(TaskLogEntry entry : entries) {
